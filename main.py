@@ -4,7 +4,7 @@ import re
 from datetime import date, timedelta
 
 def find_weekly_hot_songs(n,url):
-    page = requests.get(URL)
+    page = requests.get(url)
     soup = BeautifulSoup(page.content, "html.parser")
     song_elements = soup.select(".chart-element__information__song.text--truncate.color--primary")
     song_elements = str(song_elements)
@@ -14,7 +14,7 @@ def find_weekly_hot_songs(n,url):
         end = song_elements.find("</span>")
         song = song_elements[start:end]
         songs_set.add(song)
-        song_elements = song_elements[end:]
+        song_elements = song_elements[end+1:]
     return songs_set
 
 def allsundays(weeks, day):
@@ -28,21 +28,23 @@ def allsundays(weeks, day):
 
 
 if __name__ == '__main__':
-    start_day = "2020-01-01"
-    weeks = 10
     URL = "https://www.billboard.com/charts/hot-100/"
-    n = 5
+    start_day = input("Enter start date in format yyyy-mm-dd: ")
+    weeks = input("How many consecutive weeks to record: ")
+    weeks = int(weeks)
+    n = input("Record the top # songs each week: ")
+    n = int(n)
     all_songs_list = set()
     week_dates = allsundays(weeks, start_day)
 
     for sundays in week_dates:
+        print("[+] Adding songs from the week of " + sundays + "...")
         weekly_URL = URL + sundays
-        print(weekly_URL)
         songs_list = find_weekly_hot_songs(n, weekly_URL)
-        print(songs_list)
         all_songs_list = set.union(all_songs_list, songs_list)
 
-    print(all_songs_list)
+    for song in all_songs_list:
+        print(song)
 
 
 
