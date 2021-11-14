@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from datetime import date, timedelta
+import multiprocessing as mp
 
 def find_weekly_hot_songs(n,url):
     page = requests.get(url)
@@ -26,35 +27,33 @@ def allsundays(weeks, day):
         d += timedelta(days = 7)
     return sundays
 
+def collect_result(result):
+    global all_songs
+    all_songs.append(result)
+
 
 if __name__ == '__main__':
+    # parallel processing
+    pool = mp.Pool(mp.cpu_count())
+    all_songs_list = set()
+    all_songs = []
     URL = "https://www.billboard.com/charts/hot-100/"
     start_day = input("Enter start date in format yyyy-mm-dd: ")
     weeks = input("How many consecutive weeks to record: ")
     weeks = int(weeks)
     n = input("Record the top # songs each week: ")
     n = int(n)
-    all_songs_list = set()
     week_dates = allsundays(weeks, start_day)
 
     for sundays in week_dates:
         print("[+] Adding songs from the week of " + sundays + "...")
         weekly_URL = URL + sundays
-        songs_list = find_weekly_hot_songs(n, weekly_URL)
-        all_songs_list = set.union(all_songs_list, songs_list)
+        #songs_list = find_weekly_hot_songs(n, weekly_URL)
+        pool.apply_async(find_weekly_hot_songs, args=(n, weekly_URL), callback=collect_result)
+        #all_songs_list = set.union(all_songs_list, songs_list)
 
-    for song in all_songs_list:
-        print(song)
+    pool.close()
+    pool.join()
 
-
-
-
-
-
-
-
-
-
-
-
-
+    for song in all_songs:
+        print(all_songs)
