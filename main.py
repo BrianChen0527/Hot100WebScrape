@@ -29,13 +29,15 @@ def allsundays(weeks, day):
 
 def collect_result(result):
     global all_songs
-    all_songs.append(result)
+    print(type(result))
+    for song in result:
+        all_songs_set.add(song)
 
 
 if __name__ == '__main__':
     # parallel processing
     pool = mp.Pool(mp.cpu_count())
-    all_songs_list = set()
+    all_songs_set = set()
     all_songs = []
     URL = "https://www.billboard.com/charts/hot-100/"
     start_day = input("Enter start date in format yyyy-mm-dd: ")
@@ -48,12 +50,10 @@ if __name__ == '__main__':
     for sundays in week_dates:
         print("[+] Adding songs from the week of " + sundays + "...")
         weekly_URL = URL + sundays
-        #songs_list = find_weekly_hot_songs(n, weekly_URL)
         pool.apply_async(find_weekly_hot_songs, args=(n, weekly_URL), callback=collect_result)
-        #all_songs_list = set.union(all_songs_list, songs_list)
 
     pool.close()
     pool.join()
 
-    for song in all_songs:
-        print(all_songs)
+    for song in all_songs_set:
+        print(song)
